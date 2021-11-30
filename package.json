@@ -1,0 +1,9 @@
+{
+    "scripts": {
+        "aoc": "node aoc.js"
+    },
+    "dependencies": {
+        "fs-extra": "^10.0.0",
+        "https": "^1.0.0"
+    }
+}
