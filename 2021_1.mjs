@@ -1,10 +1,8 @@
+import Util from './util.mjs'
+
 export function solve (input) {
-    let lines = input.split(/\n/).map(i => parseInt(i, 10)).filter(i => !isNaN(i))
-    let count = 0
-    for (let i = 1; i < lines.length; i++) {
-        if (lines[i] > lines[i-1])
-            count++
-    }
+    let lines = Util.splitLinesInt(input)
+    let count = lines.reduce((total, curr, idx) => idx > 0 && curr > lines[idx-1] ? ++total : total, 0)
     console.log("Pt1: " + count)
 
     count = 0

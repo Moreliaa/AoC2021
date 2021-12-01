@@ -12,7 +12,6 @@ getInput(process.argv[2], process.argv[3])
 
 function getInput(year, day) {
     const inputPath = getInputPath(year, day);
-    console.log(process.cwd(), inputPath)
     fs.readFile(inputPath, (err, data) => {
         if (err)
             fetchInput(year, day, inputPath)
