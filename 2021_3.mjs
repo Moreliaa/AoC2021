@@ -2,13 +2,9 @@ import Util from './util.mjs'
 
 export function solve(input) {
     let lines = Util.splitLines(input)
-    let res = lines.reduce((bits, line) => {
-        if (!bits)
-            return line.split('').map(c => c === "1" ? 1 : -1)
-        else
-            return line.split('').map((c, idx) => c === "1" ? ++bits[idx] : --bits[idx])
-    }, null)
-    res = res.map(b => b > 0 ? "1" : "0")
+    let res = lines.reduce(
+        (bits, line) => line.split('').map((c, idx) => c === "1" ? ++bits[idx] : --bits[idx]),
+        lines[0].split('').map(i => 0)).map(b => b > 0 ? "1" : "0")
     let gam = parseInt(res.join(''), 2)
     let eps = parseInt(res.map(c => c === "1" ? "0" : "1").join(''), 2)
     console.log("Pt1", gam * eps)
