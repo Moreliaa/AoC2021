@@ -22,8 +22,9 @@ export function solve(input) {
 }
 
 function getWinningScore(numbers, boards, picked, pt1 = true) {
-    let lastScore = null
     let pastWinners = []
+    let last_p = null
+    let last_n = null
     for (let n of numbers) {
         for (let b_idx = 0; b_idx < boards.length; b_idx++) {
             let b = boards[b_idx]
@@ -38,8 +39,9 @@ function getWinningScore(numbers, boards, picked, pt1 = true) {
                             if (pt1)
                                 return n * bScore(b, p)
                             else {
+                                last_p = p
+                                last_n = n
                                 pastWinners.push(b)
-                                lastScore = n * bScore(b, p)
                             }
                         }
                     }
@@ -47,7 +49,7 @@ function getWinningScore(numbers, boards, picked, pt1 = true) {
             }
         }
     }
-    return lastScore
+    return last_n * bScore(pastWinners[pastWinners.length - 1], last_p)
 }
 
 function bScore(b, p) {
