@@ -22,7 +22,7 @@ function solvePart(coords) {
 
         while (!(x === c.x2 && y === c.y2)) {
             put(map, x, y)
-            x = slope !== null ? x + x_incr : x
+            x += x_incr
             y = slope !== null ? y + slope : y + y_incr
         }
         put(map, x, y)
@@ -42,7 +42,7 @@ function getSlope(c) {
 }
 
 function getIncrement(a1, a2) {
-    return (a2 - a1) / Math.abs(a2 - a1)
+    return a1 === a2 ? 0 : (a2 - a1) / Math.abs(a2 - a1)
 }
 
 function put(map, x, y) {
