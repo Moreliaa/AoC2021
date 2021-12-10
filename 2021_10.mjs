@@ -25,7 +25,6 @@ export function solve(input) {
         }
         if (!isCorrupt) {
             let score = 0
-            console.log(stack)
             while (stack.length > 0) {
                 let next = stack.pop()
                 const sMap = { '(': 1, '[': 2, '{': 3, '<': 4 }
