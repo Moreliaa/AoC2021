@@ -120,11 +120,11 @@ function pt2_counts(signals, outputs) {
         }
     }
 
-    let ac0isin1 =numToSig.get(1).split('').indexOf(ac[0]) !== -1
+    let ac0isin1 = numToSig.get(1).split('').indexOf(ac[0]) !== -1
     segments.set(ac[0], ac0isin1 ? 'c' : 'a')
     segments.set(ac[1], ac0isin1 ? 'a' : 'c')
 
-    let dg0isin4 =numToSig.get(4).split('').indexOf(dg[0]) !== -1
+    let dg0isin4 = numToSig.get(4).split('').indexOf(dg[0]) !== -1
     segments.set(dg[0], dg0isin4 ? 'd' : 'g')
     segments.set(dg[1], dg0isin4 ? 'g' : 'd')
 
