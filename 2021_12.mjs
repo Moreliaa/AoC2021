@@ -14,7 +14,7 @@ export function solve(input) {
     let results = []
     findPaths(map, 'start', seen, results, true)
     console.log("Pt1:", results.length)
-    seen= []
+    seen = []
     results = []
     findPaths(map, 'start', seen, results, false, false)
     console.log("Pt2:", results.length)
@@ -31,15 +31,17 @@ function addNode(map, n, c) {
 
 function findPaths(map, n, seen, results, isPt1, revisitedOnce) {
     let current = map.get(n)
-    if (!current.isBig() && seen.indexOf(n) !== -1)
-        if (isPt1)
+    if (!current.isBig() && seen.indexOf(n) !== -1) {
+        if (isPt1) {
             return
-        else {
-            if (!revisitedOnce && n !== 'start')
+        } else {
+            if (!revisitedOnce && n !== 'start') {
                 revisitedOnce = true
-            else
+            } else {
                 return
+            }
         }
+    }
 
     seen.push(n)
 
@@ -57,7 +59,7 @@ class Node {
         this.name = n
         this.connections = c
     }
-    
+
     isBig() {
         let c = this.name.charCodeAt(0)
         return 65 <= c && c <= 90
