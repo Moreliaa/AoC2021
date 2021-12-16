@@ -22,7 +22,7 @@ export function solve(input) {
             case "F": return "1111"
         }
     }).join('')
-    
+
     let packets = getPackets(bits, bits.length)
     console.log("Pt1:", versionSum)
     console.log("Pt2:", calculateValue(packets[0]))
@@ -48,32 +48,32 @@ function getPackets(bits, end, packetLimit = null) {
     let packets = []
     while (i < end) {
         let packet = {}
-        packet.version = convertBits(bits, i, i+3)
+        packet.version = convertBits(bits, i, i + 3)
         versionSum += packet.version
         i += 3
-        packet.typeID = convertBits(bits, i,i+3)
+        packet.typeID = convertBits(bits, i, i + 3)
         i += 3
 
-        switch(packet.typeID) {
+        switch (packet.typeID) {
             case 4: // literal value
                 packet.value = []
                 while (bits[i] === "1") {
-                    packet.value.push(bits.substring(i+1, i+5))
+                    packet.value.push(bits.substring(i + 1, i + 5))
                     i += 5
                 }
-                packet.value.push(bits.substring(i+1, i+5))
-                    i += 5
+                packet.value.push(bits.substring(i + 1, i + 5))
+                i += 5
                 packet.value = parseInt(packet.value.join(''), 2)
                 break
             default: // operator
                 let lengthTypeID = bits[i]
                 i++
                 if (lengthTypeID === '0') { // 15 bits - total length in bits of subpackets
-                    let num = convertBits(bits, i, i+15)
+                    let num = convertBits(bits, i, i + 15)
                     i += 15
                     packet.subpackets = getPackets(bits, i + num)
                 } else { // 11 bits number of subpackets immediately contained
-                    let num = convertBits(bits, i, i+11)
+                    let num = convertBits(bits, i, i + 11)
                     i += 11
                     packet.subpackets = getPackets(bits, bits.length, num)
                 }
@@ -88,24 +88,24 @@ function getPackets(bits, end, packetLimit = null) {
 }
 
 function calculateValue(packet) {
-        if (packet.value !== undefined)
-            return packet.value
-        switch(packet.typeID) {
-            case 0: // sum
-                return packet.subpackets.reduce((acc, curr) => acc + calculateValue(curr), 0)
-            case 1: // product
-                return packet.subpackets.reduce((acc, curr) => acc * calculateValue(curr), 1)
-            case 2: // minimum
-                return packet.subpackets.reduce((acc, curr) => Math.min(acc, calculateValue(curr)), calculateValue(packet.subpackets[0]))
-            case 3: // maximum
-                return packet.subpackets.reduce((acc, curr) => Math.max(acc, calculateValue(curr)), calculateValue(packet.subpackets[0]))
-            case 5: // greater than
-                return calculateValue(packet.subpackets[0]) > calculateValue(packet.subpackets[1]) ? 1 : 0
-            case 6: // less than
-                return calculateValue(packet.subpackets[0]) < calculateValue(packet.subpackets[1]) ? 1 : 0
-            case 7: // equal to
-                return calculateValue(packet.subpackets[0]) === calculateValue(packet.subpackets[1]) ? 1 : 0
-        }
+    if (packet.value !== undefined)
+        return packet.value
+    switch (packet.typeID) {
+        case 0: // sum
+            return packet.subpackets.reduce((acc, curr) => acc + calculateValue(curr), 0)
+        case 1: // product
+            return packet.subpackets.reduce((acc, curr) => acc * calculateValue(curr), 1)
+        case 2: // minimum
+            return packet.subpackets.reduce((acc, curr) => Math.min(acc, calculateValue(curr)), calculateValue(packet.subpackets[0]))
+        case 3: // maximum
+            return packet.subpackets.reduce((acc, curr) => Math.max(acc, calculateValue(curr)), calculateValue(packet.subpackets[0]))
+        case 5: // greater than
+            return calculateValue(packet.subpackets[0]) > calculateValue(packet.subpackets[1]) ? 1 : 0
+        case 6: // less than
+            return calculateValue(packet.subpackets[0]) < calculateValue(packet.subpackets[1]) ? 1 : 0
+        case 7: // equal to
+            return calculateValue(packet.subpackets[0]) === calculateValue(packet.subpackets[1]) ? 1 : 0
+    }
 }
 
 function convertBits(bits, start, end) {
