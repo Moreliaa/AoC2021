@@ -2,8 +2,6 @@ import Util from './util.mjs'
 
 export function solve(input) {
     let transmission = Util.splitLines(input)[0]
-    //transmission = '8A004A801A8002F478'
-    //transmission = '620080001611562C8802118E34'
     let bits = transmission.split('').map(c => {
         switch (c) {
             case "0": return "0000"
@@ -24,11 +22,10 @@ export function solve(input) {
             case "F": return "1111"
         }
     }).join('')
-    //bits = '00111000000000000110111101000101001010010001001000000000'
-    //bits = '11101110000000001101010000001100100000100011000001100000'
     
     let packets = getPackets(bits, bits.length)
     console.log("Pt1:", versionSum)
+    console.log("Pt2:", calculateValue(packets[0]))
     //printPackets(packets, 0)
 }
 
@@ -49,9 +46,8 @@ let i = 0
 let versionSum = 0
 function getPackets(bits, end, packetLimit = null) {
     let packets = []
-    while (i < end && i + 4 <= bits.length) {
+    while (i < end) {
         let packet = {}
-        //read packet
         packet.version = convertBits(bits, i, i+3)
         versionSum += packet.version
         i += 3
@@ -59,8 +55,7 @@ function getPackets(bits, end, packetLimit = null) {
         i += 3
 
         switch(packet.typeID) {
-            case 4:
-                // literal value - single binary number
+            case 4: // literal value
                 packet.value = []
                 while (bits[i] === "1") {
                     packet.value.push(bits.substring(i+1, i+5))
@@ -73,26 +68,44 @@ function getPackets(bits, end, packetLimit = null) {
             default: // operator
                 let lengthTypeID = bits[i]
                 i++
-                if (lengthTypeID === '0') {
-                    // 15 bits - total length in bits of subpackets
+                if (lengthTypeID === '0') { // 15 bits - total length in bits of subpackets
                     let num = convertBits(bits, i, i+15)
                     i += 15
                     packet.subpackets = getPackets(bits, i + num)
-                } else {
-                    // 11 bits number of subpackets immediately contained
+                } else { // 11 bits number of subpackets immediately contained
                     let num = convertBits(bits, i, i+11)
                     i += 11
                     packet.subpackets = getPackets(bits, bits.length, num)
                 }
+                packet.value = calculateValue(packet)
         }
         if (packet.value === 0 || packet.value || packet.subpackets.length > 0)
             packets.push(packet)
         if (packetLimit && packets.length === packetLimit)
             break
-        if (i + 4 > bits.length)
-            console.log("finish", i, bits.length, ""+bits[i] + bits[i+1] + bits[i+2] +bits[i+3])
     }
     return packets
+}
+
+function calculateValue(packet) {
+        if (packet.value !== undefined)
+            return packet.value
+        switch(packet.typeID) {
+            case 0: // sum
+                return packet.subpackets.reduce((acc, curr) => acc + calculateValue(curr), 0)
+            case 1: // product
+                return packet.subpackets.reduce((acc, curr) => acc * calculateValue(curr), 1)
+            case 2: // minimum
+                return packet.subpackets.reduce((acc, curr) => Math.min(acc, calculateValue(curr)), calculateValue(packet.subpackets[0]))
+            case 3: // maximum
+                return packet.subpackets.reduce((acc, curr) => Math.max(acc, calculateValue(curr)), calculateValue(packet.subpackets[0]))
+            case 5: // greater than
+                return calculateValue(packet.subpackets[0]) > calculateValue(packet.subpackets[1]) ? 1 : 0
+            case 6: // less than
+                return calculateValue(packet.subpackets[0]) < calculateValue(packet.subpackets[1]) ? 1 : 0
+            case 7: // equal to
+                return calculateValue(packet.subpackets[0]) === calculateValue(packet.subpackets[1]) ? 1 : 0
+        }
 }
 
 function convertBits(bits, start, end) {
