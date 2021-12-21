@@ -11,8 +11,8 @@ export function solve(input) {
     console.log("Pt1", pt1(p1_0, p2_0))
 
     let states = new Map() // score, position, steps, count
-    let initial = new State(0, p1_0, 0, p2_0, 0, 1)
-    states.set(getKey(0, p1_0, 0, p2_0, 0), initial)
+    let initial = new State(0, p1_0, 0, p2_0, 1)
+    states.set(getKey(0, p1_0, 0, p2_0), initial)
     while (!eachStateWon(states)) {
         states = step_pt2(states)
     }
@@ -60,11 +60,11 @@ function step_pt2(states) {
                                 let sum2 = numbers[l] + numbers[m] + numbers[n]
                                 let posNextP2 = getPos(state.pos_p2, sum2)
                                 let scoreNextP2 = state.score_p2 + posNextP2
-                                let key = getKey(scoreNextP1, posNextP1, scoreNextP2, posNextP2, state.steps + 1)
+                                let key = getKey(scoreNextP1, posNextP1, scoreNextP2, posNextP2)
                                 if (statesNext.has(key))
                                     statesNext.get(key).count += state.count
                                 else
-                                    statesNext.set(key, new State(scoreNextP1, posNextP1, scoreNextP2, posNextP2, state.steps + 1, state.count))
+                                    statesNext.set(key, new State(scoreNextP1, posNextP1, scoreNextP2, posNextP2, state.count))
                             }
                         }
                     }
@@ -126,16 +126,15 @@ function getPos(p, dieVal) {
 }
 
 class State {
-    constructor(score_p1, pos_p1, score_p2, pos_p2, steps, count) {
+    constructor(score_p1, pos_p1, score_p2, pos_p2, count) {
         this.score_p1 = score_p1
         this.pos_p1 = pos_p1
         this.score_p2 = score_p2
         this.pos_p2 = pos_p2
-        this.steps = steps
         this.count = count
     }
 }
 
-function getKey(score_p1, pos_p1, score_p2, pos_p2, steps) {
-    return [score_p1, pos_p1, score_p2, pos_p2, steps].join(',')
+function getKey(score_p1, pos_p1, score_p2, pos_p2) {
+    return [score_p1, pos_p1, score_p2, pos_p2].join(',')
 }
