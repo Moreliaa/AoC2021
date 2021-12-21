@@ -4,8 +4,6 @@ export function solve(input) {
     let lines = Util.splitLines(input)
     let p1_0 = parseInt(lines[0][lines[0].length - 1], 10)
     let p2_0 = parseInt(lines[1][lines[1].length - 1], 10)
-    p1_0 = 4
-    p2_0 = 8
     console.log("Pt1", pt1(p1_0, p2_0))
 
     let states = new Map() // score, position, steps, count
