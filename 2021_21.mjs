@@ -4,14 +4,11 @@ export function solve(input) {
     let lines = Util.splitLines(input)
     let p1_0 = parseInt(lines[0][lines[0].length - 1], 10)
     let p2_0 = parseInt(lines[1][lines[1].length - 1], 10)
-    p1_0 = 4
-    p2_0 = 8
-
 
     console.log("Pt1", pt1(p1_0, p2_0))
 
     let states = new Map() // score, position, steps, count
-    let initial = new State(0, p1_0, 0, p2_0, 1)
+    let initial = new State(0, p1_0, 0, p2_0, BigInt(1))
     states.set(getKey(0, p1_0, 0, p2_0), initial)
     while (!eachStateWon(states)) {
         states = step_pt2(states)
@@ -21,15 +18,19 @@ export function solve(input) {
 }
 
 function result_pt2(states) {
-    let total_p1 = 0
-    let total_p2 = 0
+    let total_p1 = BigInt(0)
+    let total_p2 = BigInt(0)
     for (let state of states.values()) {
         if (state.score_p1 >= 21)
             total_p1 += state.count
         if (state.score_p2 >= 21 && state.score_p1 < 21)
             total_p2 += state.count
     }
-    return Math.max(total_p1, total_p2)
+    console.log(total_p1, total_p2) // this was the previous approach, why doesn't it work?
+
+
+    console.log(wins_p1, wins_p2)
+    return wins_p1 > wins_p2 ? wins_p1 : wins_p2
 }
 
 function eachStateWon(states) {
@@ -40,11 +41,15 @@ function eachStateWon(states) {
     return true
 }
 
+let wins_p1 = BigInt(0)
+let wins_p2 = BigInt(0)
 function step_pt2(states) {
     let statesNext = new Map()
     for (let state of states.values()) {
-        if (state.score_p1 >= 21 || state.score_p2 >= 21)
+        if (state.score_p1 >= 21 || state.score_p2 >= 21) {
+            statesNext.set(getKey(state.score_p1, state.pos_p1, state.score_p2, state.pos_p2), state)
             continue
+        }
         let numbers = [1, 2, 3]
         // permutations p1
         for (let i = 0; i < numbers.length; i++) {
@@ -53,18 +58,29 @@ function step_pt2(states) {
                     let sum = numbers[i] + numbers[j] + numbers[k]
                     let posNextP1 = getPos(state.pos_p1, sum)
                     let scoreNextP1 = state.score_p1 + posNextP1
-                    // permutations p2
-                    for (let l = 0; l < numbers.length; l++) {
-                        for (let m = 0; m < numbers.length; m++) {
-                            for (let n = 0; n < numbers.length; n++) {
-                                let sum2 = numbers[l] + numbers[m] + numbers[n]
-                                let posNextP2 = getPos(state.pos_p2, sum2)
-                                let scoreNextP2 = state.score_p2 + posNextP2
-                                let key = getKey(scoreNextP1, posNextP1, scoreNextP2, posNextP2)
-                                if (statesNext.has(key))
-                                    statesNext.get(key).count += state.count
-                                else
-                                    statesNext.set(key, new State(scoreNextP1, posNextP1, scoreNextP2, posNextP2, state.count))
+                    if (scoreNextP1 >= 21) {
+                        wins_p1 += state.count
+                        let key = getKey(scoreNextP1, posNextP1, state.score_p2, state.pos_p2)
+                        if (statesNext.has(key))
+                            statesNext.get(key).count += state.count
+                        else
+                            statesNext.set(key, new State(scoreNextP1, posNextP1, state.score_p2, state.pos_p2, state.count))
+                    } else {
+                        // permutations p2
+                        for (let l = 0; l < numbers.length; l++) {
+                            for (let m = 0; m < numbers.length; m++) {
+                                for (let n = 0; n < numbers.length; n++) {
+                                    let sum2 = numbers[l] + numbers[m] + numbers[n]
+                                    let posNextP2 = getPos(state.pos_p2, sum2)
+                                    let scoreNextP2 = state.score_p2 + posNextP2
+                                    let key = getKey(scoreNextP1, posNextP1, scoreNextP2, posNextP2)
+                                    if (scoreNextP2 >= 21)
+                                        wins_p2 += state.count
+                                    if (statesNext.has(key))
+                                        statesNext.get(key).count += state.count
+                                    else
+                                        statesNext.set(key, new State(scoreNextP1, posNextP1, scoreNextP2, posNextP2, state.count))
+                                }
                             }
                         }
                     }
@@ -96,7 +112,6 @@ function pt1(p1_0, p2_0) {
         nextDie = (nextDie + 3) % 100
         if (nextDie === 0)
             nextDie = 100
-        console.log("p1", p1, "p2", p2, "next", nextDie)
     }
     let rolls = steps * 6 - ((s1 >= 1000) ? 3 : 0)
     let lScore = (s1 >= 1000) ? s2 : s1
