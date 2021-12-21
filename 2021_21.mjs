@@ -4,41 +4,17 @@ export function solve(input) {
     let lines = Util.splitLines(input)
     let p1_0 = parseInt(lines[0][lines[0].length - 1], 10)
     let p2_0 = parseInt(lines[1][lines[1].length - 1], 10)
-
+    p1_0 = 4
+    p2_0 = 8
     console.log("Pt1", pt1(p1_0, p2_0))
 
     let states = new Map() // score, position, steps, count
     let initial = new State(0, p1_0, 0, p2_0, BigInt(1))
     states.set(getKey(0, p1_0, 0, p2_0), initial)
-    while (!eachStateWon(states)) {
+    while (states.size !== 0) {
         states = step_pt2(states)
     }
-    console.log("Pt2:", result_pt2(states))
-    // do same for p2  
-}
-
-function result_pt2(states) {
-    let total_p1 = BigInt(0)
-    let total_p2 = BigInt(0)
-    for (let state of states.values()) {
-        if (state.score_p1 >= 21)
-            total_p1 += state.count
-        if (state.score_p2 >= 21 && state.score_p1 < 21)
-            total_p2 += state.count
-    }
-    console.log(total_p1, total_p2) // this was the previous approach, why doesn't it work?
-
-
-    console.log(wins_p1, wins_p2)
-    return wins_p1 > wins_p2 ? wins_p1 : wins_p2
-}
-
-function eachStateWon(states) {
-    for (let state of states.values()) {
-        if (state.score_p1 < 21 && state.score_p2 < 21)
-            return false
-    }
-    return true
+    console.log("Pt2:", wins_p1 > wins_p2 ? wins_p1 : wins_p2)
 }
 
 let wins_p1 = BigInt(0)
@@ -47,7 +23,6 @@ function step_pt2(states) {
     let statesNext = new Map()
     for (let state of states.values()) {
         if (state.score_p1 >= 21 || state.score_p2 >= 21) {
-            statesNext.set(getKey(state.score_p1, state.pos_p1, state.score_p2, state.pos_p2), state)
             continue
         }
         let numbers = [1, 2, 3]
@@ -55,31 +30,28 @@ function step_pt2(states) {
         for (let i = 0; i < numbers.length; i++) {
             for (let j = 0; j < numbers.length; j++) {
                 for (let k = 0; k < numbers.length; k++) {
-                    let sum = numbers[i] + numbers[j] + numbers[k]
-                    let posNextP1 = getPos(state.pos_p1, sum)
-                    let scoreNextP1 = state.score_p1 + posNextP1
-                    if (scoreNextP1 >= 21) {
+                    let sum1 = numbers[i] + numbers[j] + numbers[k]
+                    let pos_p1_next = getPos(state.pos_p1, sum1)
+                    let score_p1_next = state.score_p1 + pos_p1_next
+                    if (score_p1_next >= 21) {
                         wins_p1 += state.count
-                        let key = getKey(scoreNextP1, posNextP1, state.score_p2, state.pos_p2)
-                        if (statesNext.has(key))
-                            statesNext.get(key).count += state.count
-                        else
-                            statesNext.set(key, new State(scoreNextP1, posNextP1, state.score_p2, state.pos_p2, state.count))
                     } else {
                         // permutations p2
                         for (let l = 0; l < numbers.length; l++) {
                             for (let m = 0; m < numbers.length; m++) {
                                 for (let n = 0; n < numbers.length; n++) {
                                     let sum2 = numbers[l] + numbers[m] + numbers[n]
-                                    let posNextP2 = getPos(state.pos_p2, sum2)
-                                    let scoreNextP2 = state.score_p2 + posNextP2
-                                    let key = getKey(scoreNextP1, posNextP1, scoreNextP2, posNextP2)
-                                    if (scoreNextP2 >= 21)
+                                    let pos_p2_next = getPos(state.pos_p2, sum2)
+                                    let score_p2_next = state.score_p2 + pos_p2_next
+                                    let key = getKey(score_p1_next, pos_p1_next, score_p2_next, pos_p2_next)
+                                    if (score_p2_next >= 21) {
                                         wins_p2 += state.count
-                                    if (statesNext.has(key))
-                                        statesNext.get(key).count += state.count
-                                    else
-                                        statesNext.set(key, new State(scoreNextP1, posNextP1, scoreNextP2, posNextP2, state.count))
+                                    } else {
+                                        if (statesNext.has(key))
+                                            statesNext.get(key).count += state.count
+                                        else
+                                            statesNext.set(key, new State(score_p1_next, pos_p1_next, score_p2_next, pos_p2_next, state.count))
+                                    }
                                 }
                             }
                         }
