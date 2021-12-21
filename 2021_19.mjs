@@ -19,7 +19,7 @@ export function solve(input) {
     for (let i = 0; i < scanners.length; i++) {
         let permutations = rotations(scanners[i])
         for (let j = 0; j < permutations.length; j++) {
-            if (combinedScanner.reduce((acc, curr) => {return acc && isMatch(curr, permutations[j]) }, true)) {
+            if (combinedScanner.reduce((acc, curr) => { return acc && isMatch(curr, permutations[j]) }, true)) {
                 console.log("is Match")
                 combinedScanner.push(permutations[j])
                 scanners.splice(i, 1)
@@ -40,7 +40,7 @@ function isMatch(s1, s2) {
     let diffA = null
     let diffB = null
     let diffC = null
-console.log(s1[0], s2[0])
+    console.log(s1[0], s2[0])
     for (let i = 0; i < s1.length; i++) {
         let c1 = s1[i]
         let c2 = s2[i]
@@ -62,7 +62,7 @@ console.log(s1[0], s2[0])
 
 function rotations(scanner) {
     let rots = new Array(24)
-    for (let i = 0; i <rots.length; i++)
+    for (let i = 0; i < rots.length; i++)
         rots[i] = []
     for (let coord of scanner) {
         //positive x
