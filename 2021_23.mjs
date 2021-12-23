@@ -1,36 +1,24 @@
-import Util from './util.mjs'
-
 export function solve(input) {
-    let lines = Util.splitLines(input)
-    // cant stop in front of rooms
-    // can only move from hallway into destination rooms *if* only correct amphipods are in that room
-    // after stopping in hallway, can only move to move into destination room
-    let hallway = '...........'.split('')
-    let rooms = [{ idx: 0, i: 2, s: 'A', t: ['D', 'B'] },
-    { idx: 1, i: 4, s: 'B', t: ['B', 'D'] },
-    { idx: 2, i: 6, s: 'C', t: ['A', 'A'] },
-    { idx: 3, i: 8, s: 'D', t: ['C', 'C'] }]
+    let rooms_pt1 = [
+        { idx: 0, i: 2, s: 'A', t: ['D', 'B'] },
+        { idx: 1, i: 4, s: 'B', t: ['B', 'D'] },
+        { idx: 2, i: 6, s: 'C', t: ['A', 'A'] },
+        { idx: 3, i: 8, s: 'D', t: ['C', 'C'] }
+    ]
 
-    rooms = [
-    { idx: 0, i: 2, s: 'A', t: ['B', 'A'] },
-    { idx: 1, i: 4, s: 'B', t: ['C', 'D'] },
-    { idx: 2, i: 6, s: 'C', t: ['B', 'C'] },
-    { idx: 3, i: 8, s: 'D', t: ['D', 'A'] }]
+    let rooms_pt2 = [
+        { idx: 0, i: 2, s: 'A', t: ['D', 'D', 'D', 'B'] },
+        { idx: 1, i: 4, s: 'B', t: ['B', 'C', 'B', 'D'] },
+        { idx: 2, i: 6, s: 'C', t: ['A', 'B', 'A', 'A'] },
+        { idx: 3, i: 8, s: 'D', t: ['C', 'A', 'C', 'C'] }
+    ]
 
-    printBoard(rooms, hallway)
-    while (!isSolved(rooms)) {
-        act(rooms, hallway)
-    }
-
-    console.log("Pt1:", energy)
-
+    console.log("Pt1:", solvePart(rooms_pt1))
+    cache = new Map()
+    console.log("Pt2:", solvePart(rooms_pt2))
 }
 
-function isSolved(rooms) {
-    return rooms.reduce((acc, curr) => acc && curr.t[0] === curr.s && curr.t[1] === curr.s, true)
-}
-
-let energy = 0
+let cache = new Map()
 const energy_cost = {
     A: 1,
     B: 10,
@@ -38,97 +26,87 @@ const energy_cost = {
     D: 1000
 }
 
-function act(rooms, hallway) {
-    // if we can move to a destination room and there are no incorrect amphipods
-    for (let i = 0; i < hallway.length; i++) {
-        let tile = hallway[i]
-        if (tile === '.')
-            continue
-        if (tryMoveIntoDestination(rooms, hallway, "hall", i))
-            return
-    }
-
-    for (let i = 0; i < rooms.length; i++) {
-        let r = rooms[i]
-        for (let j = 0; j < r.t.length; j++) {
-            let tile = r.t[j]
-            if (tile === '.')
-                continue
-            if (tryMoveIntoDestination(rooms, hallway, "room", i))
-                return
+function solvePart(rooms) {
+    let hallway = '...........'.split('')
+    let states = [[rooms, hallway, 0]]
+    let nextStates = states
+    let energies = []
+    while (nextStates.length > 0) {
+        console.log(nextStates.length)
+        states = nextStates
+        nextStates = []
+        for (let s of states) {
+            nextStates = nextStates.concat(step(s[0], s[1], s[2]))
+        }
+        for (let s of nextStates) {
+            if (isSolved(s[0]))
+                energies.push(s[2])
         }
     }
-    // otherwise pick the cheapest to move amphipod inside a room, prioritizing making room for incorrect amphipods to move out 
-    let next = null
-    for (let j = 0; j < rooms[0].t.length; j++) {
-        for (let i = 0; i < rooms.length; i++) {
-            let r = rooms[i]
-            let tile = r.t[j]
-            if (tile === '.')
-                continue
-            if (j !== 0 && rooms[i].t[0] !== '.') // blocked
-                continue
-            let priority = r.t.reduce((acc, curr) => acc || (curr === '.' || curr === r.s), false) ? 0 : 1
-            if (!next || rooms[next.roomIdx].t[next.tileIdx] > tile || priority > next.priority)
-                next = { roomIdx: i, tileIdx: j, priority}
-        }
-    }
-    // move next adjacent to target room depending on the movement intent of the contained top element
-    tryMove(rooms,hallway,next)
+    return Math.min(...energies)
 }
 
-function tryMove(rooms, hallway, next) {
-    let targetRoom = rooms.filter(r => r.s === rooms[next.roomIdx].t[next.tileIdx])[0]
-    let topElementInRoom = targetRoom.t[0] !== '.' && targetRoom !== rooms[next.roomIdx] ? targetRoom.t[0] : targetRoom.t[1]
-    let targetRoomOfTopElement = rooms.filter(r => r.s === topElementInRoom)[0]
-    let offset = targetRoom.i - targetRoomOfTopElement.i < 0 ? -1 : 1
-    console.log("targets", targetRoom, targetRoomOfTopElement)
-    let path = next.tileIdx > 0 ? [rooms[next.roomIdx].t[0]] : []
-    if (rooms[next.roomIdx].i < targetRoom.i + offset)
-        path = path.concat(hallway.slice(rooms[next.roomIdx].i, targetRoom.i + offset + 1))
-    else
-        path = path.concat(hallway.slice(targetRoom.i + offset, rooms[next.roomIdx].i + 1))
-    console.log("path", path)
-    if (path.filter(t => t === '.').length !== path.length) {
-        // if the target tile is blocked, the blocking element can be pushed only if its one tile away from the edge of the hallway
-        if (targetRoom.i === 2 && offset === -1 && hallway[0] === '.') {
-            //push left and move there
-            move(rooms, hallway, "hall", targetRoom.i + offset, "hall", targetRoom.i + offset - 1, 1)
-        } else if (targetRoom.i === 8 && offset === 1 && hallway[hallway.length - 1] === '.') {
-            // push rigth and move there
-            move(rooms, hallway, "hall", targetRoom.i + offset, "hall", targetRoom.i + offset + 1, 1)
-        } else {
-            return false
-        }
+function step(rooms, hallway, energy) {
+    let cacheKey = getCacheKey(rooms, hallway)
+    if (cache.has(cacheKey) && cache.get(cacheKey) <= energy)
+        return []
+    cache.set(cacheKey, energy)
+    let actors = possibleActors(rooms, hallway)
+    let nextStates = []
+    for (let a of actors[0]) { // hallway
+        nextStates = nextStates.concat(tryMoveIntoDestination(rooms, hallway, a, energy))
     }
-    move(rooms, hallway, "room", next.roomIdx, "hall", targetRoom.i + offset, path.length)
-    return true
+    for (let a of actors[1]) { // rooms
+        nextStates = nextStates.concat(tryMoveIntoHallway(rooms, hallway, a, energy))
+    }
+    return nextStates
 }
 
-function move(rooms, hallway, from, fromIdx, to, toIdx, steps) {
+function possibleActors(rooms, hallway) {
+    let a_hall = hallway.map((val, idx) => val !== '.' ? idx : null).filter(val => val !== null)
+    let a_rooms = rooms.map((val, idx) => val.t.filter(tile => tile !== '.').length > 0 ? idx : null).filter(val => val !== null)
+    return [a_hall, a_rooms]
+}
+
+function isSolved(rooms) {
+    return rooms.reduce((acc, curr) => acc && curr.t[0] === curr.s && curr.t[1] === curr.s, true)
+}
+
+function getCacheKey(rooms, hallway) {
+    let str = hallway.join('')
+    for (let r of rooms) {
+        str += r.t.join('')
+    }
+    return str
+}
+
+function move(rooms, hallway, from, fromIdx, to, toIdx, steps, energy) {
+    let newRooms = rooms.map(r => { return { idx: r.idx, i: r.i, s: r.s, t: r.t.slice() } })
+    let newHallway = hallway.slice()
     let a
     let aIdx
     if (from === "room") {
-        aIdx = (rooms[fromIdx].t[0] === '.') ? 1 : 0
-        a = rooms[fromIdx].t[aIdx]
-        rooms[fromIdx].t[aIdx] = '.'
+        aIdx = newRooms[fromIdx].t.map((val, idx) => val !== '.' ? idx : null).filter(val => val !== null)[0]
+        a = newRooms[fromIdx].t[aIdx]
+        newRooms[fromIdx].t[aIdx] = '.'
     } else {
-        a = hallway[fromIdx]
-        hallway[fromIdx] = '.'
+        a = newHallway[fromIdx]
+        newHallway[fromIdx] = '.'
     }
 
-    energy += steps * energy_cost[a]
+    let newEnergy = energy + steps * energy_cost[a]
 
     if (to === "room") {
-        if (rooms[toIdx].t[1] === '.')
-            rooms[toIdx].t[1] = a
-        else
-            rooms[toIdx].t[0] = a
+        let targetIdx = newRooms[toIdx].t.map((val, idx) => val === '.' ? idx : null).filter(val => val !== null)
+        targetIdx = targetIdx[targetIdx.length - 1]
+        newRooms[toIdx].t[targetIdx] = a
     } else {
-        hallway[toIdx] = a
+        newHallway[toIdx] = a
     }
+    //printBoard(newRooms, newHallway)
+    return [newRooms, newHallway, newEnergy]
 
-    printBoard(rooms, hallway)
+
 }
 
 function printBoard(rooms, hallway) {
@@ -145,38 +123,45 @@ function printBoard(rooms, hallway) {
     console.log("")
 }
 
-function tryMoveIntoDestination(rooms, hallway, from, fromIdx) {
-    let a
-    let aIdx
-    if (from === "room") {
-        aIdx = (rooms[fromIdx].t[0] === '.') ? 1 : 0
-        a = rooms[fromIdx].t[aIdx]
-    } else {
-        a = hallway[fromIdx]
-    }
+function tryMoveIntoDestination(rooms, hallway, fromIdx, energy) {
+    let a = hallway[fromIdx]
     let targetRoom = rooms.filter(r => r.s === a)[0]
-    if (from === "room" && fromIdx === targetRoom.idx)
-        return false
     let validElementsInRoom = targetRoom.t.filter(tile => tile === '.' || tile === targetRoom.s)
-    if (validElementsInRoom.length !== 2)
-        return false
+    if (validElementsInRoom.length !== rooms[0].t.length)
+        return []
     let path = []
-    if (from === "room") {
-        path = aIdx > 0 ? [rooms[fromIdx].t[0]] : []
-        if (rooms[fromIdx].i < targetRoom.i)
-            path = path.concat(hallway.slice(rooms[fromIdx].i, targetRoom.i + 1))
-        else
-            path = path.concat(hallway.slice(targetRoom.i, rooms[fromIdx].i + 1))
-    } else {
-        if (fromIdx < targetRoom.i)
-            path = path.concat(hallway.slice(fromIdx + 1, targetRoom.i + 1))
-        else
-            path = path.concat(hallway.slice(targetRoom.i + 1, fromIdx + 1))
-    }
-    path = path.concat(targetRoom.t[1] !== '.' ? [targetRoom.t[0]] : targetRoom.t)
+
+    if (fromIdx < targetRoom.i)
+        path = path.concat(hallway.slice(fromIdx + 1, targetRoom.i + 1))
+    else
+        path = path.concat(hallway.slice(targetRoom.i, fromIdx))
+
+    path = path.concat(targetRoom.t.filter(tile => tile === '.'))
     if (path.filter(t => t === '.').length !== path.length) {
-        return false
+        return []
     }
-    move(rooms, hallway, from, fromIdx, "room", targetRoom.idx, path.length)
-    return true
+    return [move(rooms, hallway, "hall", fromIdx, "room", targetRoom.idx, path.length, energy)]
+}
+
+function tryMoveIntoHallway(rooms, hallway, fromIdx, energy) {
+    let currentRoom = rooms[fromIdx]
+    if (currentRoom.t.filter(tile => tile === '.' || tile === currentRoom.s).length === currentRoom.t.length)
+        return []
+    let minIdx = currentRoom.i
+    let maxIdx = currentRoom.i
+    while (hallway[minIdx - 1] === '.' && minIdx > 0) {
+        minIdx--
+    }
+    while (hallway[maxIdx + 1] === '.' && maxIdx < hallway.length) {
+        maxIdx++
+    }
+    let result = []
+    let distanceOutOfRoom = currentRoom.t.filter(tile => tile === '.').length
+    for (let i = minIdx; i <= maxIdx; i++) {
+        if (rooms.filter(r => r.i === i).length === 0) {
+            let pathLength = Math.abs(currentRoom.i - i) + 1 + distanceOutOfRoom
+            result.push(move(rooms, hallway, "room", fromIdx, "hall", i, pathLength, energy))
+        }
+    }
+    return result
 }
