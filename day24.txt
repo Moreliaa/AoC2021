@@ -1,0 +1,236 @@
+inp w			w=INPUT0 x=0 y=0 z=0
+eql x 0			w=INPUT0 x=1 y=0 z=0
+add y w			w=INPUT0 x=1 y=INPUT0 z=0
+add y 8			w=INPUT0 x=1 y=INPUT0+8 z=0
+add z y			w=INPUT0 x=1 y=INPUT0+8 z=INPUT0+8
+
+inp w			w=INPUT1 x=1 y=INPUT0+8 z=INPUT0+8
+mul x 0			w=INPUT1 x=0 y=INPUT0+8 z=INPUT0+8
+add x z			w=INPUT1 x=INPUT0+8 y=INPUT0+8 z=INPUT0+8
+mod x 26		w=INPUT1 x=(INPUT0+8)%26 y=INPUT0+8 z=INPUT0+8
+add x 14		w=INPUT1 x=((INPUT0+8)%26)+14 y=INPUT0+8 z=INPUT0+8
+eql x w			w=INPUT1 x=0 y=INPUT0+8 z=INPUT0+8		(always false since 14 > 9)
+eql x 0			w=INPUT1 x=1 y=INPUT0+8 z=INPUT0+8
+mul y 0			w=INPUT1 x=1 y=0 z=INPUT0+8
+add y 25		w=INPUT1 x=1 y=25 z=INPUT0+8
+add y 1			w=INPUT1 x=1 y=26 z=INPUT0+8
+mul z y			w=INPUT1 x=1 y=26 z=(INPUT0+8)*26
+mul y 0			w=INPUT1 x=1 y=0 z=(INPUT0+8)*26
+add y w			w=INPUT1 x=1 y=INPUT1 z=(INPUT0+8)*26
+add y 13		w=INPUT1 x=1 y=INPUT1+13 z=(INPUT0+8)*26
+add z y			w=INPUT1 x=1 y=INPUT1+13 z=((INPUT0+8)*26)+INPUT1+13
+
+inp w			w=INPUT2 x=1 y=INPUT1+13 z=((INPUT0+8)*26)+INPUT1+13
+mul x 0			w=INPUT2 x=0 y=INPUT1+13 z=((INPUT0+8)*26)+INPUT1+13
+add x z			w=INPUT2 x=((INPUT0+8)*26)+INPUT1+13 y=INPUT1+13 z=((INPUT0+8)*26)+INPUT1+13
+mod x 26		w=INPUT2 x=(((INPUT0+8)*26)+INPUT1+13)%26 y=INPUT1+13 z=((INPUT0+8)*26)+INPUT1+13
+add x 10		w=INPUT2 x=((((INPUT0+8)*26)+INPUT1+13)%26)+10 y=INPUT1+13 z=((INPUT0+8)*26)+INPUT1+13
+eql x w			w=INPUT2 x=0 y=INPUT1+13 z=((INPUT0+8)*26)+INPUT1+13		(always false since 10 > 9)
+eql x 0			w=INPUT2 x=1 y=INPUT1+13 z=((INPUT0+8)*26)+INPUT1+13
+mul y 0			w=INPUT2 x=1 y=0 z=((INPUT0+8)*26)+INPUT1+13
+add y 25		w=INPUT2 x=1 y=25 z=((INPUT0+8)*26)+INPUT1+13
+add y 1			w=INPUT2 x=1 y=26 z=((INPUT0+8)*26)+INPUT1+13
+mul z y			w=INPUT2 x=1 y=26 z=(((INPUT0+8)*26)+INPUT1+13)*26
+mul y 0			w=INPUT2 x=1 y=0 z=(((INPUT0+8)*26)+INPUT1+13)*26
+add y w			w=INPUT2 x=1 y=INPUT2 z=(((INPUT0+8)*26)+INPUT1+13)*26
+add y 2			w=INPUT2 x=1 y=INPUT2+2 z=(((INPUT0+8)*26)+INPUT1+13)*26
+add z y			w=INPUT2 x=1 y=INPUT2+2 z=((((INPUT0+8)*26)+INPUT1+13)*26)+INPUT2+2
+
+inp w			w=INPUT3 x=1 y=INPUT2+2 z=((((INPUT0+8)*26)+INPUT1+13)*26)+INPUT2+2
+mul x 0
+add x z			w=INPUT3 x=((((INPUT0+8)*26)+INPUT1+13)*26)+INPUT2+2 y=INPUT2+2 z=((((INPUT0+8)*26)+INPUT1+13)*26)+INPUT2+2
+mod x 26		w=INPUT3 x=(((((INPUT0+8)*26)+INPUT1+13)*26)+INPUT2+2)%26 y=INPUT2+2 z=((((INPUT0+8)*26)+INPUT1+13)*26)+INPUT2+2
+div z 26		w=INPUT3 x=(((((INPUT0+8)*26)+INPUT1+13)*26)+INPUT2+2)%26 y=INPUT2+2 z=(((((INPUT0+8)*26)+INPUT1+13)*26)+INPUT2+2)/26
+eql x w		???
+eql x 0
+mul y 0			w=INPUT3 x= 0 OR 1 y=0 z=(((((INPUT0+8)*26)+INPUT1+13)*26)+INPUT2+2)/26
+add y 25
+mul y x			w=INPUT3 x= 0 OR 1 y=0 OR 25 z=(((((INPUT0+8)*26)+INPUT1+13)*26)+INPUT2+2)/26
+add y 1			w=INPUT3 x= 0 OR 1 y=1 OR 26 z=(((((INPUT0+8)*26)+INPUT1+13)*26)+INPUT2+2)/26
+mul z y			w=INPUT3 x= 0 OR 1 y=1 OR 26 z=((((((INPUT0+8)*26)+INPUT1+13)*26)+INPUT2+2)/26) * (1 OR 26)
+mul y 0			
+add y w
+add y 7			w=INPUT3 x= 0 OR 1 y=INPUT3+7 z=((((((INPUT0+8)*26)+INPUT1+13)*26)+INPUT2+2)/26) * (1 OR 26)
+mul y x			w=INPUT3 x= 0 OR 1 y=(INPUT3+7) OR 0 z=((((((INPUT0+8)*26)+INPUT1+13)*26)+INPUT2+2)/26) * (1 OR 26)
+add z y
+
+inp w
+mul x 0
+add x z
+mod x 26
+div z 1
+add x 12
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 11
+mul y x
+add z y
+inp w
+mul x 0
+add x z
+mod x 26
+div z 1
+add x 12
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 4
+mul y x
+add z y
+inp w
+mul x 0
+add x z
+mod x 26
+div z 1
+add x 12
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 13
+mul y x
+add z y
+inp w
+mul x 0
+add x z
+mod x 26
+div z 26
+add x -8
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 13
+mul y x
+add z y
+inp w
+mul x 0
+add x z
+mod x 26
+div z 26
+add x -9
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 10
+mul y x
+add z y
+inp w
+mul x 0
+add x z
+mod x 26
+div z 1
+add x 11
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 1
+mul y x
+add z y
+inp w
+mul x 0
+add x z
+mod x 26
+div z 26
+add x 0
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 2
+mul y x
+add z y
+inp w
+mul x 0
+add x z
+mod x 26
+div z 26
+add x -5
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 14
+mul y x
+add z y
+inp w
+mul x 0
+add x z
+mod x 26
+div z 26
+add x -6
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 6
+mul y x
+add z y
+inp w
+mul x 0  	w=INPUT x=???%26 -12 y=??? z=???/26
+add x z
+mod x 26
+div z 26
+add x -12
+eql x w
+eql x 0
+mul y 0
+add y 25
+mul y x
+add y 1
+mul z y
+mul y 0
+add y w
+add y 14
+mul y x
+add z y
