@@ -14,20 +14,43 @@ export function solve(input) {
         else
             scanner.push(l.split(',').map(n => parseInt(n, 10)))
     }
-
-    let combinedScanner = scanners.splice(0, 1)
+    for (let s of scanners)
+        s.sort(sortScanner)
+    let handledIdx = []
     for (let i = 0; i < scanners.length; i++) {
-        let permutations = rotations(scanners[i])
-        for (let j = 0; j < permutations.length; j++) {
-            if (combinedScanner.reduce((acc, curr) => { return acc && isMatch(curr, permutations[j]) }, true)) {
-                console.log("is Match")
-                combinedScanner.push(permutations[j])
-                scanners.splice(i, 1)
-                i = -1
-                break
+        if (handledIdx.indexOf(i) === -1 && handledIdx.length !== 0)
+            continue
+        let scanner = scanners[i]
+        for (let k = 0; k < scanners.length; k++) {
+            if (k === i || handledIdx.indexOf(k) !== -1)
+                continue
+            let otherScanner = scanners[k]
+            let permutations = rotations(otherScanner)
+            for (let j = 0; j < permutations.length; j++) {
+                let matchingScanner = isMatch(scanner, permutations[j])
+                if (matchingScanner) {
+                    console.log("Match: ", i, k, matchingScanner.diffsCoords)
+                    scanners[k] = matchingScanner.s2New
+                    if (handledIdx.length === 0) {
+                        handledIdx.push(i)
+                        i = -1
+                    }
+                    handledIdx.push(k)
+                    break
+                }
             }
         }
     }
+
+    let beacons = new Set()
+    for (let s of scanners) {
+        for (let b of s) {
+            let key = b[0] + "," + b[1] + "," + b[2]
+            if (!beacons.has(key))
+                beacons.add(key)
+        }
+    }
+    console.log("Pt1:", beacons.size)
 
     //console.log(scanners)
     // scanner detects beacons max 1000 units away in a cube
@@ -36,28 +59,53 @@ export function solve(input) {
 }
 
 function isMatch(s1, s2) {
-    let count = 0
-    let diffA = null
-    let diffB = null
-    let diffC = null
-    console.log(s1[0], s2[0])
+    let diffs = {}
+    let coord = 0
     for (let i = 0; i < s1.length; i++) {
-        let c1 = s1[i]
-        let c2 = s2[i]
-        if (i === 0) {
-            diffA = c1[0] - c2[0]
-            diffB = c1[1] - c2[1]
-            diffC = c1[2] - c2[2]
-        } else {
-            console.log(c1, c2)
-            if (c1[0] - c2[0] === diffA && c1[1] - c2[1] === diffB && c1[2] - c2[2] === diffC)
-                count++
+        for (let j = 0; j < s2.length; j++) {
+            let result = s1[i][coord] - s2[j][coord]
+            if (!diffs[result])
+                diffs[result] = [[i, j]]
+            else
+                diffs[result].push([i, j])
         }
-        if (count >= 11)
-            return true
     }
-    console.log(count, diffA, diffB, diffC)
+    let diffsOver12 = []
+    for (let d in diffs) {
+        if (diffs[d].length >= 12)
+            diffsOver12.push([d, diffs[d]])
+    }
+    if (diffsOver12.length === 0) {
+        return false
+    }
+
+    let matches = []
+    for (let d of diffsOver12) {
+        let result = true
+        let diffsCoords = [parseInt(d[0], 10)]
+        for (let coord = 1; coord <= 2; coord++) {
+            let values = d[1].map(entry => s1[entry[0]][coord] - s2[entry[1]][coord])
+            result = result && values.filter(v => v === values[0]).length === values.length
+            diffsCoords.push(values[0])
+        }
+        if (result)
+            matches.push(diffsCoords)
+    }
+    if (matches.length === 1) {
+        let diffsCoords = matches[0]
+        s2.sort(sortScanner)
+        let s2New = s2.map(entry => [entry[0] + diffsCoords[0], entry[1] + diffsCoords[1], entry[2] + diffsCoords[2]])
+        //console.log("s1, s2New", s1, s2New)
+        return { diffsCoords, s2New }
+    } else if (matches.length > 1) {
+        console.log("big thonk")
+        return false
+    }
     return false
+}
+
+function sortScanner(a, b) {
+    return a[0] - b[0]
 }
 
 function rotations(scanner) {
