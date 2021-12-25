@@ -157,12 +157,28 @@ export function solve(input) {
     let currentScanners = []
     let nextScanners = []
     let seekAnchor = false
-    while (handledIdx.length !== scanners.length && !seekAnchor) {
+    let anchorPoint = null
+    let threshold = 12
+    while (handledIdx.length !== scanners.length) {
         if (currentScanners.length === 0) {
             seekAnchor = true
-            currentScanners = scanners.map((v, idx) => idx).filter((idx) => handledIdx.indexOf(idx) === -1)
+            if (anchorPoint === null) {
+                
+                currentScanners = scanners.map((v, idx) => idx).filter((idx) => handledIdx.indexOf(idx) === -1)
+            } else {
+                currentScanners = scanners.map((v, idx) => idx).filter((idx) => handledIdx.indexOf(idx) !== -1)
+            }
         }
-        console.log("nextscans", currentScanners)
+        if (seekAnchor && anchorPoint !== null) {
+            threshold--
+            if (threshold < 2) {
+                console.log("Nope")
+            break}
+        } else {
+            threshold = 12
+        }
+        handledIdx.sort((a,b) => a-b)
+        console.log("nextscans", currentScanners, threshold, seekAnchor, anchorPoint, handledIdx.join(','))
         for (let i = 0; i < currentScanners.length; i++) {
             let matchFound = false
             let scanner = scanners[currentScanners[i]]
@@ -172,7 +188,7 @@ export function solve(input) {
                 let otherScanner = scanners[k]
                 let permutations = rotations(otherScanner)
                 for (let j = 0; j < permutations.length; j++) {
-                    let matchingScanner = isMatch(scanner, permutations[j])
+                    let matchingScanner = isMatch(scanner, permutations[j], threshold)
                     if (matchingScanner) {
                         console.log("Match: ", currentScanners[i], k, matchingScanner.diffsCoords)
                         scanners[k] = matchingScanner.s2New
@@ -184,7 +200,11 @@ export function solve(input) {
                 }
             }
             if (matchFound && seekAnchor) {
-                handledIdx.push(currentScanners[i])
+                if (anchorPoint === null) {
+                    anchorPoint = currentScanners[i]
+                    handledIdx.push(currentScanners[i])
+                }
+                
                 seekAnchor = false
                 break
             }
@@ -211,7 +231,7 @@ export function solve(input) {
     // axes are random for each scanner, as well as their sign
 }
 
-function isMatch(s1, s2) {
+function isMatch(s1, s2, threshold) {
     let diffs = {}
     let coord = 0
     for (let i = 0; i < s1.length; i++) {
@@ -223,22 +243,22 @@ function isMatch(s1, s2) {
                 diffs[result].push([i, j])
         }
     }
-    let diffsOver12 = []
+    let diffsOverThreshold = []
     for (let d in diffs) {
-        if (diffs[d].length >= 12)
-            diffsOver12.push([d, diffs[d]])
+        if (diffs[d].length >= threshold)
+            diffsOverThreshold.push([d, diffs[d]])
     }
-    if (diffsOver12.length === 0) {
+    if (diffsOverThreshold.length === 0) {
         return false
     }
 
     let matches = []
-    for (let d of diffsOver12) {
+    for (let d of diffsOverThreshold) {
         let result = true
         let diffsCoords = [parseInt(d[0], 10)]
         for (let coord = 1; coord <= 2; coord++) {
             let values = d[1].map(entry => s1[entry[0]][coord] - s2[entry[1]][coord])
-            result = result && values.filter(v => v === values[0]).length === values.length
+            result = result && values.filter(v => v === values[0]).length === threshold
             diffsCoords.push(values[0])
         }
         if (result)
