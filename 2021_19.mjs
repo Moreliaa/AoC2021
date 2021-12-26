@@ -38,7 +38,7 @@ export function solve(input) {
             threshold = 12
         }
         handledIdx.sort((a, b) => a - b)
-        console.log("nextscans", currentScanners, threshold, seekAnchor, anchorPoint, handledIdx.join(','))
+        console.log("Next scanners:", currentScanners.join(','), threshold, seekAnchor, anchorPoint, handledIdx.join(','))
         for (let i = 0; i < currentScanners.length; i++) {
             let matchFound = false
             let scanner = scanners[currentScanners[i]]
@@ -175,7 +175,6 @@ function getPermutations() {
         ]
     permsCache = []
     for (let f of factors) {
-        console.log(f)
         for (let coord0 = 0; coord0 < 3; coord0++) {
             for (let coord1 = 0; coord1 < 3; coord1++) {
                 if (coord0 === coord1)
