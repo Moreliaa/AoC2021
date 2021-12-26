@@ -151,40 +151,42 @@ function sortScanner(a, b) {
 }
 
 function rotations(scanner) {
-    let rots = new Array(24)
+    let rots = new Array(48)
     for (let i = 0; i < rots.length; i++)
         rots[i] = []
+    let permutations = getPermutations()
     for (let coord of scanner) {
-        // positive x
-        rots[0].push([+coord[0], +coord[1], +coord[2]])
-        rots[1].push([+coord[0], -coord[2], +coord[1]])
-        rots[2].push([+coord[0], -coord[1], -coord[2]])
-        rots[3].push([+coord[0], +coord[2], -coord[1]])
-        // negative x
-        rots[4].push([-coord[0], -coord[1], +coord[2]])
-        rots[5].push([-coord[0], +coord[2], +coord[1]])
-        rots[6].push([-coord[0], +coord[1], -coord[2]])
-        rots[7].push([-coord[0], -coord[2], -coord[1]])
-        // positive y
-        rots[8].push([+coord[1], +coord[2], +coord[0]])
-        rots[9].push([+coord[1], -coord[0], +coord[2]])
-        rots[10].push([+coord[1], -coord[2], -coord[0]])
-        rots[11].push([+coord[1], +coord[0], -coord[2]])
-        // negative y
-        rots[12].push([-coord[1], -coord[2], +coord[0]])
-        rots[13].push([-coord[1], +coord[0], +coord[2]])
-        rots[14].push([-coord[1], +coord[2], -coord[0]])
-        rots[15].push([-coord[1], -coord[0], -coord[2]])
-        // positive z
-        rots[16].push([+coord[2], +coord[0], +coord[1]])
-        rots[17].push([+coord[2], -coord[1], +coord[0]])
-        rots[18].push([+coord[2], -coord[0], -coord[1]])
-        rots[19].push([+coord[2], +coord[1], -coord[0]])
-        // negative z
-        rots[20].push([-coord[2], -coord[0], +coord[1]])
-        rots[21].push([-coord[2], +coord[1], +coord[0]])
-        rots[22].push([-coord[2], +coord[0], -coord[1]])
-        rots[23].push([-coord[2], -coord[1], -coord[0]])
+        for (let j = 0; j < permutations.length; j++) {
+            let p = permutations[j]
+            rots[j].push([coord[p[0][0]] * p[0][1], coord[p[1][0]] * p[1][1], coord[p[2][0]] * p[2][1]])
+        }
     }
     return rots
+}
+
+let permsCache = null
+function getPermutations() {
+    if (permsCache)
+        return permsCache
+    const factors =
+        [
+            [1, 1, 1], [1, -1, 1], [1, 1, -1], [-1, 1, 1],
+            [-1, -1, 1], [-1, 1, -1], [1, -1, -1], [-1, -1, -1]
+        ]
+    permsCache = []
+    for (let f of factors) {
+        console.log(f)
+        for (let coord0 = 0; coord0 < 3; coord0++) {
+            for (let coord1 = 0; coord1 < 3; coord1++) {
+                if (coord0 === coord1)
+                    continue
+                for (let coord2 = 0; coord2 < 3; coord2++) {
+                    if (coord2 === coord0 || coord2 === coord1)
+                        continue
+                    permsCache.push([[coord0, f[0]], [coord1, f[1]], [coord2, f[2]]])
+                }
+            }
+        }
+    }
+    return permsCache
 }
